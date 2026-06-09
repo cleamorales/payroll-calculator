@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#19271F" />
+  <title>Calculate your Tips!</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="wrap">
+      <h1>Calculate your Tips!</h1>
+    </div>
+  </header>
+
+  <!-- Job selector: the whole UI tints to the active job's color -->
+  <div class="jobbar-wrap">
+    <div class="wrap">
+      <div class="jobbar" id="jobBar" aria-label="Job profiles"></div>
+    </div>
+  </div>
+
+  <!-- Primary navigation: top tabs on desktop, thumb-zone bar on phones -->
+  <nav class="nav" id="nav" aria-label="Sections">
+    <button class="navitem is-active" data-panel="log" aria-current="page">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l3 3v15l-2.5-1.5L13 21l-2.5-1.5L8 21l-2.5-1.5L3 21V6z"/><path d="M7 8h8M7 12h8M7 16h5"/></svg>
+      <span>Log</span>
+    </button>
+    <button class="navitem" data-panel="history">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      <span>History</span>
+    </button>
+    <button class="navitem" data-panel="period">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>
+      <span>Period</span>
+    </button>
+    <button class="navitem" data-panel="jobs">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+      <span>Jobs</span>
+    </button>
+  </nav>
+
+  <main class="wrap" id="main">
+
+    <!-- ============ LOG SHIFT ============ -->
+    <section class="panel is-active" id="panel-log" aria-labelledby="logHead">
+      <div class="log-grid">
+        <form class="card" id="shiftForm" autocomplete="off">
+          <h2 class="card-title" id="logHead">Log a shift</h2>
+          <p class="card-sub">for <strong id="logJobName">—</strong></p>
+
+          <label class="field">
+            <span>Date</span>
+            <input type="date" id="f-date" required />
+          </label>
+          <label class="field">
+            <span>Hours worked</span>
+            <input type="number" id="f-hours" inputmode="decimal" step="0.25" min="0" placeholder="8" required />
+          </label>
+          <label class="field">
+            <span>Tips earned ($)</span>
+            <input type="number" id="f-tips" inputmode="decimal" step="0.01" min="0" placeholder="200" required />
+          </label>
+          <label class="field">
+            <span>Total sales ($)</span>
+            <input type="number" id="f-sales" inputmode="decimal" step="0.01" min="0" placeholder="900" required />
+          </label>
+
+          <button type="submit" class="btn btn-primary" id="saveShiftBtn">Save shift</button>
+        </form>
+
+        <!-- Live breakdown, styled like the log card -->
+        <div class="card" id="breakdownCard" aria-live="polite">
+          <h2 class="card-title">Your take-home</h2>
+          <p class="card-sub">for <strong id="r-job">—</strong> · <span id="r-date">—</span></p>
+          <ul class="tape" id="r-tape"></ul>
+          <div class="receipt-rule"></div>
+          <div class="receipt-total">
+            <span>Take home</span>
+            <span class="big-num" id="r-net">$0.00</span>
+          </div>
+          <p class="receipt-stamp" id="r-stamp"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ HISTORY ============ -->
+    <section class="panel" id="panel-history" aria-labelledby="histHead">
+      <div class="card">
+        <h2 class="card-title" id="histHead">Shift history</h2>
+        <div id="historyList" class="history-list"></div>
+      </div>
+    </section>
+
+    <!-- ============ PAY PERIOD ============ -->
+    <section class="panel" id="panel-period" aria-labelledby="perHead">
+      <div class="card">
+        <h2 class="card-title" id="perHead">Pay period totals</h2>
+        <div class="row">
+          <label class="field">
+            <span>Start date</span>
+            <input type="date" id="p-start" />
+          </label>
+          <label class="field">
+            <span>End date</span>
+            <input type="date" id="p-end" />
+          </label>
+        </div>
+        <label class="field check">
+          <input type="checkbox" id="p-alljobs" />
+          <span>Include all jobs</span>
+        </label>
+        <div id="periodResult" class="period-result"></div>
+      </div>
+    </section>
+
+    <!-- ============ JOBS ============ -->
+    <section class="panel" id="panel-jobs" aria-labelledby="jobsHead">
+      <div class="jobs-grid">
+        <div class="card">
+          <h2 class="card-title" id="jobsHead">Your jobs</h2>
+          <div id="jobList" class="job-list"></div>
+        </div>
+
+        <form class="card" id="jobForm" autocomplete="off">
+          <h2 class="card-title" id="jobFormTitle">New job</h2>
+
+          <label class="field">
+            <span>Job name</span>
+            <input type="text" id="j-name" maxlength="28" placeholder="Server - Restaurant" required />
+          </label>
+
+          <div class="row">
+            <label class="field">
+              <span>Base rate ($/hr)</span>
+              <input type="number" id="j-rate" inputmode="decimal" step="0.01" min="0" placeholder="2.13" required />
+            </label>
+            <label class="field">
+              <span>Tipout (%)</span>
+              <input type="number" id="j-tipout" inputmode="decimal" step="0.1" min="0" placeholder="8" required />
+            </label>
+          </div>
+
+          <div class="row">
+            <label class="field">
+              <span>Tax rate (%)</span>
+              <input type="number" id="j-tax" inputmode="decimal" step="0.1" min="0" placeholder="15" required />
+            </label>
+            <label class="field">
+              <span>OT multiplier (×)</span>
+              <input type="number" id="j-otmult" inputmode="decimal" step="0.1" min="1" placeholder="1.5" required />
+            </label>
+          </div>
+
+          <div class="field">
+            <span>Overtime rule</span>
+            <div class="segmented" id="j-otrule">
+              <button type="button" data-val="weekly" class="seg is-active">Weekly · 40+ hrs</button>
+              <button type="button" data-val="daily" class="seg">Daily · 8+ hrs</button>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="jobSaveBtn">Add job</button>
+            <button type="button" class="btn btn-ghost" id="jobCancelBtn" hidden>Cancel</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
